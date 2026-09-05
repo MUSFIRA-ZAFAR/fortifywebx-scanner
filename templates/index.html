@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>FortifyWebX Scanner</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #0f1117; color: #e6e6e6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: #1a1d27; padding: 40px; border-radius: 12px; width: 420px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+        h1 { font-size: 22px; margin-bottom: 4px; color: #ffffff; }
+        p.subtitle { color: #8b8f9c; margin-top: 0; margin-bottom: 24px; font-size: 14px; }
+        label { display: block; margin-bottom: 6px; font-size: 13px; color: #b0b3bd; }
+        input { width: 100%; padding: 10px; margin-bottom: 16px; border-radius: 6px; border: 1px solid #2c303c; background: #12141c; color: #fff; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; border: none; border-radius: 6px; background: #4f7cff; color: white; font-size: 15px; font-weight: 600; cursor: pointer; }
+        button:hover { background: #3f68e0; }
+        .error { background: #3a1f24; color: #ff8080; padding: 10px; border-radius: 6px; margin-bottom: 16px; font-size: 13px; }
+        .row { display: flex; gap: 12px; }
+        .row > div { flex: 1; }
+        .note { font-size: 12px; color: #6b6f7b; margin-top: 16px; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🛡️ FortifyWebX Scanner</h1>
+        <p class="subtitle">Non-intrusive web vulnerability scanner</p>
+
+        {% if error %}
+            <div class="error">{{ error }}</div>
+        {% endif %}
+
+        <form action="/scan" method="POST">
+            <label>Target URL</label>
+            <input type="text" name="target" placeholder="http://localhost:3000" required>
+
+            <div class="row">
+                <div>
+                    <label>Delay (seconds)</label>
+                    <input type="number" step="0.1" name="delay" value="0.5">
+                </div>
+                <div>
+                    <label>Max Pages</label>
+                    <input type="number" name="max_pages" value="30">
+                </div>
+            </div>
+
+            <button type="submit">Start Scan</button>
+        </form>
+        <p class="note">Only scan targets you are authorized to test (e.g. DVWA, OWASP Juice Shop).</p>
+    </div>
+</body>
+</html>

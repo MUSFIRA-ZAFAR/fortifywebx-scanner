@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Scan Results — FortifyWebX</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #0f1117; color: #e6e6e6; margin: 0; padding: 30px; }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { font-size: 24px; margin-bottom: 4px; }
+        .meta { color: #8b8f9c; font-size: 14px; margin-bottom: 24px; }
+        .summary { display: flex; gap: 16px; margin-bottom: 24px; }
+        .stat { background: #1a1d27; padding: 16px 20px; border-radius: 10px; flex: 1; text-align: center; }
+        .stat .num { font-size: 26px; font-weight: 700; }
+        .stat .label { font-size: 12px; color: #8b8f9c; margin-top: 4px; }
+        .High .num { color: #ff5f5f; }
+        .Medium .num { color: #ffbb4d; }
+        .Low .num { color: #4dd0ff; }
+        .Info .num { color: #aaa; }
+        .score-box { background: #1a1d27; padding: 16px 20px; border-radius: 10px; margin-bottom: 24px; text-align: center; }
+        .score-box .num { font-size: 30px; font-weight: 700; color: #4f7cff; }
+        .downloads { margin-bottom: 30px; }
+        .downloads a { display: inline-block; margin-right: 12px; padding: 10px 18px; background: #4f7cff; color: white; text-decoration: none; border-radius: 6px; font-size: 14px; }
+        .downloads a:hover { background: #3f68e0; }
+        .finding { background: #1a1d27; padding: 16px 20px; border-radius: 8px; margin-bottom: 12px; border-left: 4px solid #555; }
+        .finding.High { border-left-color: #ff5f5f; }
+        .finding.Medium { border-left-color: #ffbb4d; }
+        .finding.Low { border-left-color: #4dd0ff; }
+        .finding.Info { border-left-color: #aaa; }
+        .finding h3 { margin: 0 0 8px 0; font-size: 15px; }
+        .finding .badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 10px; margin-right: 8px; background: #2c303c; }
+        .finding p { margin: 4px 0; font-size: 13px; color: #b0b3bd; }
+        .section-title { font-size: 18px; margin: 30px 0 12px 0; }
+        a.back { color: #4f7cff; text-decoration: none; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a class="back" href="/">&larr; New Scan</a>
+        <h1>Scan Results</h1>
+        <div class="meta">Target: {{ target }} &middot; {{ results.pages|length }} pages crawled</div>
+
+        <div class="score-box">
+            <div class="num">{{ total_score }}</div>
+            <div class="label">Overall Risk Score</div>
+        </div>
+
+        <div class="summary">
+            {% for level in ['High', 'Medium', 'Low', 'Info'] %}
+            <div class="stat {{ level }}">
+                <div class="num">{{ counts[level] }}</div>
+                <div class="label">{{ level }}</div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="downloads">
+            <a href="/download/{{ md_filename }}">📄 Download Markdown Report</a>
+            <a href="/download/{{ pdf_filename }}">📕 Download PDF Report</a>
+        </div>
+
+        {% for level in ['High', 'Medium', 'Low', 'Info'] %}
+            {% if grouped[level] %}
+            <div class="section-title">{{ level }} Risk Findings ({{ grouped[level]|length }})</div>
+            {% for finding in grouped[level] %}
+            <div class="finding {{ level }}">
+                <h3>{{ finding.name }} <span class="badge">Score: {{ finding.score }}</span></h3>
+                <p><strong>Location:</strong> {{ finding.location }}</p>
+                <p><strong>Evidence:</strong> {{ finding.evidence }}</p>
+                <p><strong>Description:</strong> {{ finding.description }}</p>
+            </div>
+            {% endfor %}
+            {% endif %}
+        {% endfor %}
+    </div>
+</body>
+</html>
