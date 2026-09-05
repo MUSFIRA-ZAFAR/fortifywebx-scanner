@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/banner.png" alt="FortifyWebX Scanner" width="100%">
+  <img src="assets/banner.svg" alt="FortifyWebX Scanner" width="100%">
 </p>
 <p align="center">
   <img alt="Python" src="https://img.shields.io/badge/Python-3.9%2B-3776AB?style=flat-square&logo=python&logoColor=white">
@@ -9,32 +9,22 @@
   <img alt="License" src="https://img.shields.io/badge/License-MIT-green?style=flat-square">
   <img alt="Status" src="https://img.shields.io/badge/Status-Complete-success?style=flat-square">
 </p>
+<h3 align="center">Target &nbsp;→&nbsp; Crawl &nbsp;→&nbsp; Scan &nbsp;→&nbsp; Report</h3>
 <p align="center">
 A non-intrusive web application vulnerability scanner built from scratch — with recon crawling, five passive vulnerability checks, severity-scored reporting, a CLI, and a full web GUI.
-</p>
-<p align="center">
-  <a href="#overview">Overview</a> •
-  <a href="#features">Features</a> •
-  <a href="#architecture">Architecture</a> •
-  <a href="#screenshots">Screenshots</a> •
-  <a href="#installation">Installation</a> •
-  <a href="#usage">Usage</a> •
-  <a href="#sample-findings--juice-shop-vs-dvwa">Sample Findings</a> •
-  <a href="#known-limitations">Limitations</a>
 </p>
 ---
 Overview
 FortifyWebX Scanner takes a target URL, crawls it for pages/forms/endpoints, runs a set of non-intrusive vulnerability checks against everything it finds, and produces a scored, human-readable report (Markdown + PDF). It was built as the capstone project for the FortifyWebX cybersecurity internship, and is designed exclusively for scanning authorized, non-production lab targets — OWASP Juice Shop and DVWA.
 No exploitation is ever attempted. Every check is passive: reading response headers, checking cookie flags, pattern-matching form structure, and inspecting response bodies for error text — never sending injection payloads.
 Features
-	
-🕷️ Recon Crawler	Breadth-first crawl with content-type/status-code awareness — won't misparse JSON or error pages as HTML
-🛡️ 5 Vulnerability Checks	Security headers · cookie flags · XSS-risk form patterns · SQL error indicators · tech stack fingerprinting
-📊 Severity Scoring	Every finding gets a numeric score (9/6/3/1); an overall risk score summarizes the whole scan
-📄 Dual Reports	Clean Markdown and polished PDF, auto-generated per scan
-💻 CLI	Colored terminal output, configurable rate limiting and crawl depth
-🌐 Web GUI	Flask-based dashboard — enter a URL, get a live results page with downloadable reports
-✅ Verified Checks	Standalone test fixture proves check logic works correctly, independent of any single target's quirks
+✅ Recon crawler — breadth-first crawl with content-type/status-code awareness (won't misparse JSON or error pages as HTML)
+✅ 5 vulnerability checks — security headers, cookie flags, XSS-risk form patterns, SQL error indicators, tech stack fingerprinting
+✅ Severity scoring — every finding gets a numeric score (9/6/3/1); an overall risk score summarizes the whole scan
+✅ Dual reports — clean Markdown and polished PDF, auto-generated per scan
+✅ CLI — colored terminal output, configurable rate limiting and crawl depth
+✅ Web GUI — Flask-based dashboard: enter a URL, get a live results page with downloadable reports
+✅ Verified checks — includes a standalone test fixture proving check logic works correctly, independent of any single target's quirks
 Architecture
 ```mermaid
 flowchart LR
