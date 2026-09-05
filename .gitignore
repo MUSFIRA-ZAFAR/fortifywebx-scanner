@@ -1,0 +1,22 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.Python
+*.egg-info/
+
+# Scan output (generated at runtime — not part of source)
+reports/*.md
+reports/*.pdf
+!reports/.gitkeep
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Flask
+instance/
+.flaskenv

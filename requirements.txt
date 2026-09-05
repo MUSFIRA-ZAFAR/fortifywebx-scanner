@@ -1,0 +1,6 @@
+requests
+beautifulsoup4
+lxml
+colorama
+flask
+fpdf2
