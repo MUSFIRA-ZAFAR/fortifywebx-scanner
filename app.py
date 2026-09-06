@@ -19,10 +19,30 @@ JUICE_SHOP_KNOWN_ENDPOINTS = [
     "/api/Users", "/api/Feedbacks", "/rest/basket", "/rest/products/search",
 ]
 
+# --- Public deployment safety -------------------------------------------
+# When DEMO_MODE is enabled (set via environment variable on the hosting
+# platform), the scanner is restricted to a fixed allowlist of authorized
+# targets. This prevents a publicly deployed instance from being used as
+# an open scanning proxy against arbitrary third-party URLs, which would
+# be a real-world SSRF/abuse risk and would violate this project's own
+# "authorized targets only" ethics principle.
+#
+# https://demo.owasp-juice.shop is OWASP's own official public demo
+# instance, explicitly published as a "guinea pig for your security
+# tools" — safe and intended for exactly this kind of use.
+DEMO_MODE = os.environ.get("DEMO_MODE", "false").lower() == "true"
+ALLOWED_DEMO_TARGETS = ["https://demo.owasp-juice.shop"]
+
 
 def validate_url(url):
     parsed = urlparse(url)
     return parsed.scheme in ("http", "https") and bool(parsed.netloc)
+
+
+def is_target_allowed(url):
+    if not DEMO_MODE:
+        return True  # unrestricted when self-hosted / run locally
+    return url.rstrip("/") in [t.rstrip("/") for t in ALLOWED_DEMO_TARGETS]
 
 
 def get_seed_urls(base_url):
@@ -58,7 +78,11 @@ def run_scan(target, delay, max_pages):
 
 @app.route("/", methods=["GET"])
 def index():
-    return render_template("index.html")
+    return render_template(
+        "index.html",
+        demo_mode=DEMO_MODE,
+        demo_target=ALLOWED_DEMO_TARGETS[0] if DEMO_MODE else "",
+    )
 
 
 @app.route("/scan", methods=["POST"])
@@ -68,7 +92,19 @@ def scan():
     max_pages = int(request.form.get("max_pages", 30))
 
     if not validate_url(target):
-        return render_template("index.html", error=f"Invalid URL: {target}")
+        return render_template("index.html", error=f"Invalid URL: {target}", demo_mode=DEMO_MODE, demo_target=ALLOWED_DEMO_TARGETS[0] if DEMO_MODE else "")
+
+    if not is_target_allowed(target):
+        return render_template(
+            "index.html",
+            error=(
+                "Demo mode: this public instance can only scan the official OWASP Juice Shop "
+                f"demo target ({ALLOWED_DEMO_TARGETS[0]}). Clone the repo to scan your own "
+                "authorized targets (e.g. a local DVWA/Juice Shop instance)."
+            ),
+            demo_mode=DEMO_MODE,
+            demo_target=ALLOWED_DEMO_TARGETS[0] if DEMO_MODE else "",
+        )
 
     results, findings, total_score, md_path, pdf_path = run_scan(target, delay, max_pages)
 
@@ -95,4 +131,6 @@ def download(filename):
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=not DEMO_MODE)
+
