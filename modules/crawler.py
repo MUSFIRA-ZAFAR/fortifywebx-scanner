@@ -52,16 +52,21 @@ class Crawler:
             # parser on JSON or stack-trace pages produces garbage
             # matches (e.g. URLs embedded inside JSON text get misread
             # as page links).
-            if status_code and status_code >= 400:
-                print(f"    [i] HTTP {status_code} — recorded as endpoint, not parsed for links")
-            elif content_type and "text/html" in content_type:
-                soup = BeautifulSoup(html, "lxml")
-                self.extract_links(url, soup)
-                self.extract_forms(url, soup)
-                self.extract_hidden_fields(url, soup)
-                self.extract_inline_scripts(url, soup)
-            else:
-                print(f"    [i] Non-HTML content ({content_type}) — recorded as endpoint, not parsed for links")
+            try:
+                if status_code and status_code >= 400:
+                    print(f"    [i] HTTP {status_code} — recorded as endpoint, not parsed for links")
+                elif content_type and "text/html" in content_type:
+                    soup = BeautifulSoup(html, "lxml")
+                    self.extract_links(url, soup)
+                    self.extract_forms(url, soup)
+                    self.extract_hidden_fields(url, soup)
+                    self.extract_inline_scripts(url, soup)
+                else:
+                    print(f"    [i] Non-HTML content ({content_type}) — recorded as endpoint, not parsed for links")
+            except Exception as e:
+                # A single page with unexpected/malformed markup should
+                # never crash the entire scan — record it and move on.
+                print(f"[!] Parsing error on {url}: {e}")
 
             time.sleep(self.delay)  # avoid hammering the target
 
