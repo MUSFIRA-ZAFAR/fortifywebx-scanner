@@ -113,6 +113,14 @@ def scan():
     except ValueError:
         max_pages = 30
 
+    # In demo mode, enforce a small, fast scan regardless of what the
+    # form fields say. This keeps public scans well under any hosting
+    # platform's request timeout, since the public target (OWASP's demo
+    # instance) can be slow to respond depending on its own load.
+    if DEMO_MODE:
+        delay = min(delay, 0.2)
+        max_pages = min(max_pages, 8)
+
     if not validate_url(target):
         return render_template("index.html", error=f"Invalid URL: {target}", demo_mode=DEMO_MODE, demo_target=ALLOWED_DEMO_TARGETS[0] if DEMO_MODE else "")
 
