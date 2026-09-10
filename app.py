@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, send_from_directory
 from urllib.parse import urlparse
 import os
+import logging
+import traceback
 
 from modules.crawler import Crawler
 from modules.checks import (
@@ -13,6 +15,7 @@ from modules.checks import (
 from modules.report_generator import generate_report, generate_pdf_report
 
 app = Flask(__name__)
+logging.basicConfig(level=logging.INFO)
 
 JUICE_SHOP_KNOWN_ENDPOINTS = [
     "/rest/products", "/rest/user/login", "/rest/user/whoami",
@@ -61,12 +64,24 @@ def run_scan(target, delay, max_pages):
 
     all_findings = []
     for page in results['pages']:
-        all_findings.extend(check_security_headers(page))
+        try:
+            all_findings.extend(check_security_headers(page))
+        except Exception:
+            logging.exception(f"check_security_headers failed for {page}")
     for page in results['pages']:
-        all_findings.extend(check_cookie_security(page))
+        try:
+            all_findings.extend(check_cookie_security(page))
+        except Exception:
+            logging.exception(f"check_cookie_security failed for {page}")
     for page in results['pages']:
-        all_findings.extend(check_sql_error_indicators(page))
-    all_findings.extend(check_tech_fingerprint(target))
+        try:
+            all_findings.extend(check_sql_error_indicators(page))
+        except Exception:
+            logging.exception(f"check_sql_error_indicators failed for {page}")
+    try:
+        all_findings.extend(check_tech_fingerprint(target))
+    except Exception:
+        logging.exception(f"check_tech_fingerprint failed for {target}")
 
     all_findings, total_score = add_severity_scores(all_findings)
 
@@ -88,8 +103,15 @@ def index():
 @app.route("/scan", methods=["POST"])
 def scan():
     target = request.form.get("target", "").strip()
-    delay = float(request.form.get("delay", 0.5))
-    max_pages = int(request.form.get("max_pages", 30))
+
+    try:
+        delay = float(request.form.get("delay", 0.5) or 0.5)
+    except ValueError:
+        delay = 0.5
+    try:
+        max_pages = int(request.form.get("max_pages", 30) or 30)
+    except ValueError:
+        max_pages = 30
 
     if not validate_url(target):
         return render_template("index.html", error=f"Invalid URL: {target}", demo_mode=DEMO_MODE, demo_target=ALLOWED_DEMO_TARGETS[0] if DEMO_MODE else "")
@@ -106,7 +128,16 @@ def scan():
             demo_target=ALLOWED_DEMO_TARGETS[0] if DEMO_MODE else "",
         )
 
-    results, findings, total_score, md_path, pdf_path = run_scan(target, delay, max_pages)
+    try:
+        results, findings, total_score, md_path, pdf_path = run_scan(target, delay, max_pages)
+    except Exception:
+        logging.exception(f"Scan failed for target: {target}")
+        return render_template(
+            "index.html",
+            error="The scan hit an unexpected error. This has been logged — please try again in a moment.",
+            demo_mode=DEMO_MODE,
+            demo_target=ALLOWED_DEMO_TARGETS[0] if DEMO_MODE else "",
+        )
 
     risk_order = ["High", "Medium", "Low", "Info"]
     grouped = {level: [f for f in findings if f["risk"] == level] for level in risk_order}
@@ -133,4 +164,3 @@ def download(filename):
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=not DEMO_MODE)
-
